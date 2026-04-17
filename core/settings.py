@@ -14,6 +14,8 @@ import os
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
+from django.core.exceptions import ImproperlyConfigured
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -66,8 +68,15 @@ def _database_from_url(url: str) -> dict:
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-x2c^@4ffa76x!6_u#7sl-z#(5$e^td7quc054tj+j7ga44hipm'
+# Loaded from environment (Render dashboard, backend/.env, CI secrets, etc.). Never commit real keys.
+SECRET_KEY = os.environ.get("SECRET_KEY", "").strip()
+if not SECRET_KEY:
+    raise ImproperlyConfigured(
+        "SECRET_KEY is not set. Add it to the environment (e.g. backend/.env as "
+        "SECRET_KEY=... or your host's env settings). Generate one with: "
+        "python -c \"from django.core.management.utils import get_random_secret_key; "
+        "print(get_random_secret_key())\""
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
